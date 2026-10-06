@@ -90,11 +90,11 @@ class UiNode(val info: AccessibilityNodeInfo) {
     val top: Int get() = rect.top
     val right: Int get() = rect.right
     val bottom: Int get() = rect.bottom
-    val width: Int get() = rect.width()
-    val height: Int get() = rect.height()
-    val centerX: Float get() = rect.exactCenterX()
-    val centerY: Float get() = rect.exactCenterY()
-    val visible: Boolean get() = !rect.isEmpty && rect.width() > 0 && rect.height() > 0
+    val width: Int get() = rect.right - rect.left
+    val height: Int get() = rect.bottom - rect.top
+    val centerX: Float get() = (rect.left + rect.right) / 2f
+    val centerY: Float get() = (rect.top + rect.bottom) / 2f
+    val visible: Boolean get() = rect.right > rect.left && rect.bottom > rect.top
 
     fun hasClickableAncestor(maxLevels: Int = 4): Boolean {
         var parent: AccessibilityNodeInfo? = try {
