@@ -5,6 +5,36 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Necessário no Android 11+ para conseguir abrir o Instagram e os navegadores. -->
+    <queries>
+        <package android:name="com.instagram.android" />
+        <package android:name="com.instagram.lite" />
+        <package android:name="com.android.chrome" />
+        <package android:name="com.chrome.beta" />
+        <package android:name="com.android.browser" />
+        <package android:name="org.mozilla.firefox" />
+        <package android:name="com.brave.browser" />
+        <package android:name="com.opera.browser" />
+        <package android:name="com.opera.mini.native" />
+        <package android:name="com.sec.android.app.sbrowser" />
+        <package android:name="com.mi.globalbrowser" />
+        <package android:name="com.miui.browser" />
+        <package android:name="com.heytap.browser" />
+        <package android:name="com.vivo.browser" />
+        <package android:name="com.huawei.browser" />
+        <package android:name="com.microsoft.emmx" />
+        <package android:name="com.duckduckgo.mobile.android" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="instagram" />
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="true"
@@ -24,8 +54,9 @@
 
         <service
             android:name=".CurtipayAccessibilityService"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true">
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
@@ -36,8 +67,12 @@
 
         <service
             android:name=".OverlayService"
-            android:foregroundServiceType="specialUse"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="automation_overlay" />
+        </service>
 
     </application>
 </manifest>
