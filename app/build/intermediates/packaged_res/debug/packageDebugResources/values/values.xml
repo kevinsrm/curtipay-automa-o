@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="purple_500">#FF6650a4</color>
+    <color name="white">#FFFFFFFF</color>
+    <string name="accessibility_service_description">Serviço de Automação para Curtipay e Instagram. Executa tarefas de seguir perfis, curtir publicações e confirmar tarefas em segundo plano.</string>
+    <string name="app_name">Macro Curtipay Auto</string>
+    <style name="Theme.Macro4Curtipay" parent="android:Theme.Material.Light.NoActionBar"/>
+</resources>

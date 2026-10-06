@@ -1,0 +1,14 @@
+{
+  "plugin": "org.smartide.plugin.android",
+  "run": "gradle :app:assembleDebug && install-apk app/build/outputs/apk/debug/app-debug.apk",
+  "intelligence": {
+    ".json": {
+      "enabled": true,
+      "run": "vscode-json-language-server --stdio"
+    },
+    ".kt": {
+      "enabled": true,
+      "run": "kotlin-language-server"
+    }
+  }
+}
