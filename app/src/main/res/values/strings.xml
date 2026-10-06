@@ -1,4 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Macro Curtipay Auto</string>
-    <string name="accessibility_service_description">Serviço de Automação para Curtipay e Instagram. Executa tarefas de seguir perfis, curtir publicações e confirmar tarefas em segundo plano.</string>
+    <string name="accessibility_service_description">Automação das tarefas da Curtipay: identifica se a tarefa é curtir publicação ou seguir perfil, abre o Instagram, executa a ação, volta para o navegador e confirma a tarefa.</string>
 </resources>
