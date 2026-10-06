@@ -68,6 +68,7 @@ class CurtipayAccessibilityService : AccessibilityService() {
 
     private val finishedTasks = LinkedHashSet<String>()
     private val failedTasks = LinkedHashSet<String>()
+    private val cardClickAttempts = HashMap<String, Int>()
 
     private class TaskCard(
         val node: UiNode,
@@ -133,9 +134,21 @@ class CurtipayAccessibilityService : AccessibilityService() {
         }
     }
 
+    /** Pausa a automação quando a tela está desligada (gestos não funcionariam). */
+    private fun screenOn(): Boolean = try {
+        val powerManager = getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
+        powerManager?.isInteractive ?: true
+    } catch (t: Throwable) {
+        true
+    }
+
     private fun step() {
         if (!stepping.compareAndSet(false, true)) return
         try {
+            if (!screenOn()) {
+                AutomationManager.notify("Tela desligada: automação pausada")
+                return
+            }
             val screen = readUi(this, packageName)
             val pkg = screen.packageName.ifEmpty { lastEventPackage }
             when (AutomationManager.currentState.value) {
@@ -157,6 +170,7 @@ class CurtipayAccessibilityService : AccessibilityService() {
     private fun resetSession() {
         finishedTasks.clear()
         failedTasks.clear()
+        cardClickAttempts.clear()
         resetTaskProgress()
         phaseStartedAt = now()
         lastNavAt = 0L
@@ -255,6 +269,7 @@ class CurtipayAccessibilityService : AccessibilityService() {
         if (click(card.node)) {
             act()
             backAttempts = 0
+            cardClickAttempts[card.key] = (cardClickAttempts[card.key] ?: 0) + 1
             AutomationManager.log("Tarefa encontrada: ${card.title} (${card.kind.label})")
             go(AutomationState.ON_TASK_DETAIL, "Abrindo a tarefa: ${card.title}")
         } else {
@@ -272,7 +287,7 @@ class CurtipayAccessibilityService : AccessibilityService() {
     private fun pickTaskCard(screen: UiScreen): TaskCard? {
         for (button in screen.allWhere { isTaskActionButton(it) }.take(8)) {
             val card = buildCard(button) ?: continue
-            if (finishedTasks.contains(card.key) || failedTasks.contains(card.key)) continue
+            if (isCardDiscarded(card)) continue
             return card
         }
 
@@ -283,10 +298,22 @@ class CurtipayAccessibilityService : AccessibilityService() {
                 (Text.looksLikeFollowTask(node.norm) || Text.looksLikeLikeTask(node.norm))
         }.take(6)) {
             val card = buildCard(title) ?: continue
-            if (finishedTasks.contains(card.key) || failedTasks.contains(card.key)) continue
+            if (isCardDiscarded(card)) continue
             if (title.clickable || title.hasClickableAncestor()) return card
         }
         return null
+    }
+
+    /** Cartão já resolvido, que falhou ou que não abre depois de 3 tentativas. */
+    private fun isCardDiscarded(card: TaskCard): Boolean {
+        if (finishedTasks.contains(card.key) || failedTasks.contains(card.key)) return true
+        val tries = cardClickAttempts[card.key] ?: 0
+        if (tries >= 3) {
+            failedTasks.add(card.key)
+            AutomationManager.log("Desisti de abrir a tarefa: ${card.title}")
+            return true
+        }
+        return false
     }
 
     private fun isTaskActionButton(node: UiNode): Boolean {
@@ -1417,7 +1444,9 @@ class CurtipayAccessibilityService : AccessibilityService() {
 
         private val CONFIRM_PAGE_MARKS = listOf(
             "conclui a tarefa", "concluir a tarefa", "confirmar tarefa", "marcar como concluida",
-            "ja curti", "ja segui", "finalizar tarefa", "abrir no instagram", "abrir o instagram"
+            "marcar como feita", "ja curti", "ja segui", "ja fiz", "ja realizei",
+            "realizei a tarefa", "fiz a tarefa", "tarefa concluida", "finalizar tarefa",
+            "abrir no instagram", "abrir o instagram"
         )
 
         private val FOLLOW_LABELS = listOf("seguir", "follow", "seguir de volta", "follow back")
@@ -1434,7 +1463,8 @@ class CurtipayAccessibilityService : AccessibilityService() {
 
         private val CONFIRM_PREFIXES = listOf(
             "conclui a tarefa", "concluir a tarefa", "conclui", "concluir", "confirmar",
-            "marcar como concluida", "ja curti", "ja segui", "finalizar"
+            "marcar como concluida", "marcar como feita", "ja curti", "ja segui", "ja fiz",
+            "ja realizei", "realizei", "fiz a tarefa", "tarefa concluida", "finalizar"
         )
 
         private val DISMISS_LABELS = listOf(
